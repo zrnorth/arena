@@ -1,0 +1,24 @@
+{
+  "name": "arena",
+  "version": "0.0.1",
+  "description": "realtime phaser arena type game",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.14.0",
+    "socket.io": "^1.5.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zrnorth/arena.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zrnorth/arena/issues"
+  },
+  "homepage": "https://github.com/zrnorth/arena#readme"
+}

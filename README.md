@@ -1,2 +1,2 @@
-# arena
-realtime phaser arena type game
+`npm install`
+`node server/main.js`
