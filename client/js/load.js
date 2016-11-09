@@ -10,6 +10,13 @@ var loadState = {
     game.load.image('win', 'assets/win.png');
   },
   create: function() {
+    // Connect to the game server
+    var socket = io.connect('http://localhost:3000');
+    console.log('connected');
+    socket.emit('joinRoom', {}, function(data) { 
+      console.log(data);
+    });
+
     game.state.start('menu');
   }
 };

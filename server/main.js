@@ -3,17 +3,13 @@ var port = 3000;
 app.set('port', port);
 
 // Create the http server
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
+var httpServer = require('http').createServer(app);
+var io = require('socket.io')(httpServer);
+
+// Initialize the game server.
+// This will add connections to io
+var gameServer = require('./server.js')(io);
 
 // start'er up
-server.listen(port);
+httpServer.listen(port);
 
-// Handle game connections here
-io.on('connection', function(socket) {
-  console.log('hello dere');
-  socket.emit('news', { hello: 'world' });
-  socket.on('hello', function(data) {
-    console.log(data);
-  });
-});

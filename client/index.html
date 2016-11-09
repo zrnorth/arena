@@ -6,14 +6,8 @@
     <!-- SocketIO -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.5.1/socket.io.js"></script>
     <script>
-        var socket = io.connect('http://localhost:3000');
-        socket.on('news', function(data) {
-          console.log(data);
-          socket.emit('hello', { my: 'data' });
-        });
     </script>
 
-    <!-- PhaserJS 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     <script type="text/javascript" src="js/boot.js"></script>
     <script type="text/javascript" src="js/load.js"></script>
@@ -23,7 +17,6 @@
     <script type="text/javascript" src="js/game.js"></script>
   </head>
 
-  -->
   <body>
     <div id="gameDiv"></div>
   </body>
