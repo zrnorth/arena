@@ -1,2 +1,4 @@
-`npm install`
-`node server/main.js`
+```
+npm install
+node server/main.js
+```
