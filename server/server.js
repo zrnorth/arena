@@ -79,7 +79,7 @@ function server(io) {
       delete clients[socket.id];
       delete playerState[socket.id];
       if (Object.keys(clients).length > 0) {
-        io.to(room).emit('playerLeft', { playerLeft: socket.id, playersInRoom: Object.keys(clients).length });
+        io.to(room).emit('playerLeft', { playerLeft: socket.id });
       }
       log('client ' + socket.id + ' disconnected from room ' + room + ' (' + Object.keys(clients).length + ' players)');
     });

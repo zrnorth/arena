@@ -19,6 +19,10 @@ var playState = {
     game.connection.on('playerState', function(playerState) {
       game.serverCanonicalState = playerState;
     });
+
+    game.connection.on('playerLeft', function(data) {
+      delete game.serverCanonicalState[data.playerLeft];
+    });
   },
 
   update: function() {
@@ -57,7 +61,7 @@ var playState = {
     // update all the sprites to match the state of the canonical state
     for (playerSocketId in game.serverCanonicalState) {
       if (playerSocketId === game.socketId) { // that's us!
-        // this is going to be slightly delayed because we are updating every frame,
+        // t)is is going to be slightly delayed because we are updating every frame,
         // and the server needs to do a roundtrip.
         // so, need to have some logic to only update player's position to the
         // canonical value when the player does something illegal.
@@ -72,11 +76,17 @@ var playState = {
           this.otherPlayerSprites[playerSocketId] = newEnemySprite;
           console.log("new");
         }
-
         // update the velocity and position to the canonical values
         var playerSprite = this.otherPlayerSprites[playerSocketId];
         playerSprite.position = playerData.position;
         playerSprite.velocity = playerData.velocity;
+      }
+    }
+    // Now clear out all the players who left
+    for (playerSocketId in this.otherPlayerSprites) {
+      if (!(playerSocketId in game.serverCanonicalState)) {
+        this.otherPlayerSprites[playerSocketId].destroy();
+        delete this.otherPlayerSprites[playerSocketId];
       }
     }
   },
