@@ -48,7 +48,7 @@ function server(io) {
         if (!err) {
           clients[socket.id] = room;
           var playersInRoom = Object.keys(clients).length;
-          ack({ playersInRoom: playersInRoom });
+          ack({ socketId: socket.id });
           log('client ' + socket.id + ' connected to room ' + room + ' (' + playersInRoom + ' players)');
           io.to(room).emit('joined', { client: socket.id });
         }
