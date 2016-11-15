@@ -14,6 +14,12 @@ var playState = {
     game.physics.enable(this.player, Phaser.Physics.ARCADE);
     this.win = game.add.sprite(this.WIN_LOCATION.x, this.WIN_LOCATION.y, 'win');
     game.physics.enable(this.win, Phaser.Physics.ARCADE);
+
+    //todo: move this
+    // handle player data updates from the server
+    game.connection.on('playerState', function(playerState) {
+      console.log('server says: ' + JSON.stringify(playerState));
+    });
   },
   update: function() {
     // when player touches win sprite, he wins!
@@ -38,6 +44,11 @@ var playState = {
     else {
       this.player.body.velocity.y = 0;
     } 
+    // broadcast our movement to the game server
+    game.connection.emit('myPosAndVelo', {
+      position: this.player.body.position,
+      velocity: this.player.body.velocity
+    });
   }, 
   winGame: function() {
     game.state.start('end');

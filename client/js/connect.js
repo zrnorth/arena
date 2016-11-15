@@ -8,9 +8,9 @@ var connectState = {
       //now that we have connected, store our connection in the game object
       game.connection = connection;
       console.log('connected');
-    });
 
-    // Load the game
-    game.state.start('play');
+      // Now that we have connected, load the game
+      game.state.start('play');
+    });
   }
 };

@@ -7,7 +7,7 @@ function server(io) {
 
   // maintain server state here
   var clients = {};
-  var rooms = [];
+  var playerState = {};
 
   function log(msg, type) {
     if (type == undefined) {
@@ -25,28 +25,25 @@ function server(io) {
       }
     }
   }
-    
-  function getARoom() {
-    // temp: just enter the first room
-    if (rooms.length === 0) {
-        rooms.push('0');
-    }
-    return 0;
-  }
 
-  // Handle a client connecting to the game
+  // Handle player data broadcasts.
+  setInterval(function() {
+    io.sockets.emit('playerState', playerState);
+  }, 500 /* 2x a second */);
+
+  // Handle a client connecting to the game.
   io.on('connection', function(socket) {
     // Reset this player's game state
     clients[socket.id] = null;
 
     socket.on('error', function(data) {
-        log('onError', 'error');
-        log(data, 'error');
+      log('onError', 'error');
+      log(data, 'error');
     });
 
     socket.on('joinRoom', function(data, ack) {
-      // create the room if it doesn't exist
-      var room = getARoom();
+      // todo: one room to start.
+      var room = 0;
       socket.join(room, function(err) {
         if (!err) {
           clients[socket.id] = room;
@@ -62,11 +59,25 @@ function server(io) {
       });
     });
 
+    socket.on('myPosAndVelo', function(posVelo) {
+      // Check if the client exists in the connected clients. Fail otherwise, haven't connected. something went wrong
+      if (!(socket.id in clients)) {
+        log('error - client has not connected properly', 'error');
+        socket.emit('errorMsg', 'did not connect to room before sending player coordinates');
+        return;
+      }
+      
+      // Update the player's known position
+      playerState[socket.id] = posVelo;
+      console.log('got this: ' + JSON.stringify(posVelo));
+      // todo: do some sort of sanity check to make sure it's allowed (server has final call)
+    });
+
     socket.on('disconnect', function(data, ack) {
       // remove the player from the room
       var room = clients[socket.id];
-      clients[socket.id] = null;
       delete clients[socket.id];
+      delete playerState[socket.id];
       if (Object.keys(clients).length > 0) {
         io.to(room).emit('playerLeft', { playerLeft: socket.id, playersInRoom: Object.keys(clients).length });
       }
