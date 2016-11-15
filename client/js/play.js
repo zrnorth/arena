@@ -1,11 +1,18 @@
 // Gameplay
 
 var playState = {
+  WIN_LOCATION: {
+    x: 400, 
+    y: 400
+  }, // todo: get this from server when room is generated
+  MIN_INITIAL_DISTANCE: 150, // todo: ''
+
   create: function() {
     this.keyboard = game.input.keyboard;
-    this.player = game.add.sprite(16, 16, 'player');
+    // Spawn the player at a random spot
+    this.player = this.randomPlayerSpawn();
     game.physics.enable(this.player, Phaser.Physics.ARCADE);
-    this.win = game.add.sprite(400, 400, 'win');
+    this.win = game.add.sprite(this.WIN_LOCATION.x, this.WIN_LOCATION.y, 'win');
     game.physics.enable(this.win, Phaser.Physics.ARCADE);
   },
   update: function() {
@@ -34,5 +41,30 @@ var playState = {
   }, 
   winGame: function() {
     game.state.start('end');
+  },
+
+  randomPlayerSpawn: function() {
+    // get a random player spawn, with min distance from the goal.
+    var playerX = Math.floor(Math.random() * (game.width - 16 /* sprite width */));
+    if (Math.abs(this.WIN_LOCATION.x - playerX) < this.MIN_INITIAL_DISTANCE) {
+      if (playerX < this.WIN_LOCATION.x) { // pin to the left
+          playerX = this.WIN_LOCATION.x - this.MIN_INITIAL_DISTANCE;
+      }
+      else {
+          playerX = this.WIN_LOCATION.x + this.MIN_INITIAL_DISTANCE;
+      }
+    }
+
+    var playerY = Math.floor(Math.random() * (game.height - 16 /* sprite width */));
+    if (Math.abs(this.WIN_LOCATION.y - playerY) < this.MIN_INITIAL_DISTANCE) {
+      if (playerY < this.WIN_LOCATION.y) { // pin to the left
+          playerY = this.WIN_LOCATION.y - this.MIN_INITIAL_DISTANCE;
+      }
+      else {
+          playerY = this.WIN_LOCATION.y + this.MIN_INITIAL_DISTANCE;
+      }
+    }
+
+    return game.add.sprite(playerX, playerY, 'player');
   }
 };
