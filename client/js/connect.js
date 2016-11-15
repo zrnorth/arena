@@ -3,13 +3,14 @@
 var connectState = {
   create: function() {
     // Connect to the game server
-    var socket = io.connect('http://localhost:3000');
-    console.log('connected');
-    socket.emit('joinRoom', {}, function(data) { 
-      console.log(data);
+    var connection = io.connect('http://localhost:3000');
+    connection.emit('joinRoom', {}, function(data) { 
+      //now that we have connected, store our connection in the game object
+      game.connection = connection;
+      console.log('connected');
     });
 
-    // Load the menu
-    game.state.start('menu');
+    // Load the game
+    game.state.start('play');
   }
 };

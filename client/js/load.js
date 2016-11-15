@@ -10,6 +10,6 @@ var loadState = {
     game.load.image('win', 'assets/win.png');
   },
   create: function() {
-    game.state.start('connect');
+    game.state.start('menu');
   }
 };

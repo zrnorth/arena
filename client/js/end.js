@@ -1,7 +1,12 @@
-// Win state
+// End of game state
 
-var winState = {
+var endState = {
   create: function() {
+    // You've won, so leave the connection
+    game.connection.disconnect();
+    delete game.connection;
+    console.log('disconnected');
+
     var winLabel = game.add.text(80, 80, "You win!!!", {
       font: '50px Arial', 
       fill: '#00FF00'

@@ -33,6 +33,6 @@ var playState = {
     } 
   }, 
   winGame: function() {
-    game.state.start('win');
+    game.state.start('end');
   }
 };
