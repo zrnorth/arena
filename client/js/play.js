@@ -2,9 +2,6 @@
 
 var playState = {
   create: function() {
-    // todo: refactor this stuff, don't need a win location
-    this.winLocation = { x: 200, y: 200 }; 
-    this.minInitialDistance = 100; // todo: ''
     this.otherPlayerSprites = {}; // other players, empty until synced with server
 
     // Get the map data and get ready to display it
@@ -32,10 +29,8 @@ var playState = {
     // Spawn the player at a random spot
     this.player = this.randomPlayerSpawn();
     game.physics.enable(this.player, Phaser.Physics.ARCADE);
-    this.win = game.add.sprite(this.winLocation.x, this.winLocation.y, 'win');
 
-    // enable physics and keyboard
-    game.physics.enable(this.win, Phaser.Physics.ARCADE);
+    // enable keyboard
     this.keyboard = game.input.keyboard;
 
     // make sure our state is synced with the server's state.
@@ -51,8 +46,9 @@ var playState = {
   update: function() {
     this.syncWithCanonicalState();
 
-    // when player touches win sprite, he wins!
-    game.physics.arcade.overlap(this.player, this.win, this.winGame, null, this);
+    // Handle collision
+    game.physics.arcade.collide(this.player, this.blockingLayer);
+    game.physics.arcade.collide(this.player, Object.values(this.otherPlayerSprites));
 
     // Movement
     if (this.keyboard.isDown(Phaser.Keyboard.A)) {
@@ -84,7 +80,7 @@ var playState = {
     // update all the sprites to match the state of the canonical state
     for (playerSocketId in game.serverCanonicalState) {
       if (playerSocketId === game.socketId) { // that's us!
-        // t)is is going to be slightly delayed because we are updating every frame,
+        // this is going to be slightly delayed because we are updating every frame,
         // and the server needs to do a roundtrip.
         // so, need to have some logic to only update player's position to the
         // canonical value when the player does something illegal.
@@ -114,31 +110,15 @@ var playState = {
     }
   },
 
+  // Todo: can't reach this atm.
   winGame: function() {
     game.state.start('end');
   },
 
   // Helper function to spawn a player. Get a random player spawn, with min distance from the goal.
   randomPlayerSpawn: function() {
-    var playerX = Math.floor(Math.random() * (game.width - 16 /* sprite width */));
-    if (Math.abs(this.winLocation.x - playerX) < this.minInitialDistance) {
-      if (playerX < this.winLocation.x) { // pin to the left
-        playerX = this.winLocation.x - this.minInitialDistance;
-      }
-      else {
-        playerX = this.winLocation.x + this.minInitialDistance;
-      }
-    }
-
-    var playerY = Math.floor(Math.random() * (game.height - 16 /* sprite width */));
-    if (Math.abs(this.winLocation.y - playerY) < this.minInitialDistance) {
-      if (playerY < this.winLocation.y) { // pin to the left
-        playerY = this.winLocation.y - this.minInitialDistance;
-      }
-      else {
-        playerY = this.winLocation.y + this.minInitialDistance;
-      }
-    }
+    var playerX = Math.floor(Math.random() * ( 16 + (game.width - 32 /* walls are 16px */)));
+    var playerY = Math.floor(Math.random() * ( 16 + (game.height -32)));
 
     return game.add.sprite(playerX, playerY, 'player');
   },
@@ -159,9 +139,9 @@ var playState = {
   // Helper function to create a sprite from a Tiled object and put it in the group specified.
   createFromTiledObject: function(element, group) {
     var sprite = group.create(element.x, element.y, element.properties.sprite);
-      //copy all properties to the sprite
-      Object.keys(element.properties).forEach(function(key){
-        sprite[key] = element.properties[key];
-      });
+    //copy all properties to the sprite
+    Object.keys(element.properties).forEach(function(key){
+      sprite[key] = element.properties[key];
+    });
   }
 };
