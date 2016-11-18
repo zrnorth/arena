@@ -10,6 +10,7 @@ var loadState = {
     game.load.image('win', 'assets/win.png');
   },
   create: function() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
     game.state.start('menu');
   }
 };
