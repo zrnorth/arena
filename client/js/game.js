@@ -1,4 +1,4 @@
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameDiv');
+var game = new Phaser.Game(16*32, 16*32, Phaser.AUTO, 'gameDiv'); // 16px tiles, 32x32
 
 game.state.add('load', loadState);
 game.state.add('menu', menuState);

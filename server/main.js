@@ -12,3 +12,4 @@ var gameServer = require('./server.js')(io);
 
 // start'er up
 httpServer.listen(port);
+console.log('Server started, listening on port ' + port);
