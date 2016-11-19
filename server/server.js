@@ -59,7 +59,7 @@ function server(io) {
       });
     });
 
-    socket.on('myPosAndVelo', function(posVelo) {
+    socket.on('myPlayerData', function(playerData) {
       // Check if the client exists in the connected clients. Fail otherwise, haven't connected. something went wrong
       if (!(socket.id in clients)) {
         log('error - client has not connected properly', 'error');
@@ -67,9 +67,9 @@ function server(io) {
         return;
       }
       
-      // Update the player's known position
-      playerState[socket.id] = posVelo;
-      console.log('got this: ' + JSON.stringify(posVelo));
+      // Update the player's known position, velo, facing
+      playerState[socket.id] = playerData;
+      console.log('got this: ' + JSON.stringify(playerData));
       // todo: do some sort of sanity check to make sure it's allowed (server has final call)
     });
 

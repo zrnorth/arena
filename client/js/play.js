@@ -28,7 +28,6 @@ var playState = {
 
     // Spawn the player at a random spot
     this.randomPlayerSpawn();
-    game.physics.enable(this.player, Phaser.Physics.ARCADE);
 
     // enable keyboard
     this.keyboard = game.input.keyboard;
@@ -45,8 +44,24 @@ var playState = {
 
   update: function() {
     this.syncWithCanonicalState();
+    this.animatePlayers();
+    
+    // Handle collision
+    game.physics.arcade.collide(this.player, this.blockingLayer);
+    game.physics.arcade.collide(Object.values(this.otherPlayerSprites), this.blockingLayer);
+    game.physics.arcade.collide(this.player, Object.values(this.otherPlayerSprites));
 
-    // Movement
+    // broadcast our position, movement, and facing to the game server
+    game.connection.emit('myPlayerData', {
+      position: this.player.body.position,
+      velocity: this.player.body.velocity,
+      facing: this.player.body.facing
+    });
+  },
+
+  // function to animate the hero and other players. determines what sprite should be rendered based on their movement.
+  animatePlayers: function() {
+    // animate hero
     var animationIsPlaying = false;
     this.player.body.velocity.x = this.player.body.velocity.y = 0;
     // Left
@@ -86,16 +101,35 @@ var playState = {
       this.player.animations.stop();
     }
 
-    // Handle collision
-    game.physics.arcade.collide(this.player, this.blockingLayer);
-    game.physics.arcade.collide(this.player, Object.values(this.otherPlayerSprites));
-
-    // broadcast our movement to the game server
-    game.connection.emit('myPosAndVelo', {
-      position: this.player.body.position,
-      velocity: this.player.body.velocity
-    });
-  }, 
+    // now animate the other players
+    for (var villainId in this.otherPlayerSprites) {
+      var villain = this.otherPlayerSprites[villainId];
+      var villainAnimationIsPlaying = false;
+      // Left
+      if (villain.body.velocity.x < 0 && !villainAnimationIsPlaying) {
+        villain.animations.play('left');
+        villainAnimationIsPlaying = true;
+      }
+      // Right
+      if (villain.body.velocity.x > 0 && !villainAnimationIsPlaying) {
+        villain.animations.play('right');
+        villainAnimationIsPlaying = true;
+      }
+      // Up
+      if (villain.body.velocity.y < 0 && !villainAnimationIsPlaying) {
+        villain.animations.play('up');
+        villainAnimationIsPlaying = true;
+      }
+      // Down
+      if (villain.body.velocity.y > 0 && !villainAnimationIsPlaying) {
+        villain.animations.play('down');
+        villainAnimationIsPlaying = true;
+      }
+      if (villain.body.velocity.x === 0 && villain.body.velocity.y === 0) {
+        villain.animations.stop();
+      }
+    }
+  },
 
   syncWithCanonicalState: function() {
     // update all the sprites to match the state of the canonical state
@@ -117,9 +151,9 @@ var playState = {
           console.log('new');
         }
         // update the velocity and position to the canonical values
-        var playerSprite = this.otherPlayerSprites[playerSocketId];
-        playerSprite.position = playerData.position;
-        playerSprite.velocity = playerData.velocity;
+        this.otherPlayerSprites[playerSocketId].body.position = playerData.position;
+        this.otherPlayerSprites[playerSocketId].body.velocity = playerData.velocity;
+        this.otherPlayerSprites[playerSocketId].body.facing = playerData.facing;
       }
     }
     // Now clear out all the players who left
@@ -136,11 +170,10 @@ var playState = {
     game.state.start('end');
   },
 
-  // Helper function to spawn a player. Get a random player spawn, with min distance from the goal.
+  // Helper function to spawn a player. Get a random player spawn
   randomPlayerSpawn: function() {
-    var playerX = Math.floor(Math.random() * ( 16 + (game.width - 32 /* walls are 16px */ )));
-    var playerY = Math.floor(Math.random() * ( 16 + (game.height -32)));
-
+    var playerX = Math.floor(16 + Math.random() * (game.width - 32));/* walls are 16px */
+    var playerY = Math.floor(16 + Math.random() * (game.height- 32));
     this.player = this.spawnKnight(playerX, playerY, true);
   },
 
@@ -156,7 +189,31 @@ var playState = {
     if (!isHero) {
       sprite.tint = 0x9BC1FF;
     }
+    // Enable physics for the sprite
+    game.physics.enable(sprite, Phaser.Physics.ARCADE);
+    // Defaults to no facing; we want to spawn facing down
+    sprite.body.facing = Phaser.DOWN;
+
     return sprite;
+  },
+
+  // Function called when players collide in a frame.
+  // Prevent players from overlapping.
+  playersCollide: function() {
+    console.log("colliding!");
+    // Cause a small bounce to get them off each other
+    if (this.player.body.velocity.x > 0) {
+      this.player.body.velocity.x = -20;
+    }
+    else if (this.player.body.velocity.x < 0) {
+      this.player.body.velocity.x = 20;
+    }
+    if (this.player.body.velocity.y > 0) {
+      this.player.body.velocity.y = -20;
+    }
+    else if (this.player.body.velocity.y < 0) {
+      this.player.body.velocity.y = 20;
+    }
   },
 
   // Helper function to find objects in a Tiled layer that contain a "type" property.
