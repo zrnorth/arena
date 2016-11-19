@@ -2,12 +2,12 @@
 
 var menuState = {
   create: function() {
-    this.mainLabel = game.add.text(80, 80, 'Start menu', {
-      font: '50px Arial',
+    this.mainLabel = game.add.text(20, 20, 'Start menu', {
+      font: '20px Arial',
       fill: '#ffffff'
     });
-    this.startLabel = game.add.text(80, game.world.height - 80, 'Press W to start', {
-      font: '25px Arial',
+    this.startLabel = game.add.text(20, game.world.height - 36, 'Press W to start', {
+      font: '12px Arial',
       fill: '#ffffff'
     });
 

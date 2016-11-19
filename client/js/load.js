@@ -9,8 +9,8 @@ var loadState = {
     // Load game assets
     game.load.tilemap('init', 'assets/tilemaps/init.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('gameTiles', 'assets/images/dungeon_sheet.png');
-    game.load.spritesheet('knight', 'assets/images/knightanim.png');
-    game.load.spritesheet('pickups', 'assets/images/pickups.png');
+    game.load.spritesheet('knight', 'assets/images/knightanim.png', 16, 16, 18, 8, 16); 
+    game.load.spritesheet('pickups', 'assets/images/pickups.png', 16, 16);
 
     // todo remove below
     game.load.image('player', 'assets/images/player.png');

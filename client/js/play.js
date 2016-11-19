@@ -27,7 +27,7 @@ var playState = {
 
 
     // Spawn the player at a random spot
-    this.player = this.randomPlayerSpawn();
+    this.randomPlayerSpawn();
     game.physics.enable(this.player, Phaser.Physics.ARCADE);
 
     // enable keyboard
@@ -46,29 +46,50 @@ var playState = {
   update: function() {
     this.syncWithCanonicalState();
 
+    // Movement
+    var animationIsPlaying = false;
+    this.player.body.velocity.x = this.player.body.velocity.y = 0;
+    // Left
+    if (this.keyboard.isDown(Phaser.Keyboard.A)) {
+      this.player.body.velocity.x -= 175;
+      if (!animationIsPlaying) {
+        this.player.animations.play('left');
+        animationIsPlaying = true;
+      }
+    }
+    // Right
+    if (this.keyboard.isDown(Phaser.Keyboard.D)) {
+      this.player.body.velocity.x += 175;
+      if (!animationIsPlaying) {
+        this.player.animations.play('right');
+        animationIsPlaying = true;
+      }
+    }
+    // Up
+    if (this.keyboard.isDown(Phaser.Keyboard.W)) {
+      this.player.body.velocity.y -= 175;
+      if (!animationIsPlaying) {
+        this.player.animations.play('up');
+        animationIsPlaying = true;
+      }
+    }
+    // Down
+    if (this.keyboard.isDown(Phaser.Keyboard.S)) {
+      this.player.body.velocity.y += 175;
+      if (!animationIsPlaying) {
+        this.player.animations.play('down');
+        animationIsPlaying = true;
+      }
+    } 
+    // if no velocity, stop animations.
+    if (this.player.body.velocity.x === 0 && this.player.body.velocity.y === 0) {
+      this.player.animations.stop();
+    }
+
     // Handle collision
     game.physics.arcade.collide(this.player, this.blockingLayer);
     game.physics.arcade.collide(this.player, Object.values(this.otherPlayerSprites));
 
-    // Movement
-    if (this.keyboard.isDown(Phaser.Keyboard.A)) {
-      this.player.body.velocity.x = -175;
-    }
-    else if (this.keyboard.isDown(Phaser.Keyboard.D)) {
-      this.player.body.velocity.x = 175;
-    }
-    else {
-      this.player.body.velocity.x = 0;
-    }
-    if (this.keyboard.isDown(Phaser.Keyboard.W)) {
-      this.player.body.velocity.y = -175;
-    }
-    else if (this.keyboard.isDown(Phaser.Keyboard.S)) {
-      this.player.body.velocity.y = 175;
-    } 
-    else {
-      this.player.body.velocity.y = 0;
-    } 
     // broadcast our movement to the game server
     game.connection.emit('myPosAndVelo', {
       position: this.player.body.position,
@@ -91,9 +112,9 @@ var playState = {
         var playerData = game.serverCanonicalState[playerSocketId];
         // if a new player has joined, add them
         if (!(playerSocketId in this.otherPlayerSprites)) {
-          var newEnemySprite = game.add.sprite(playerData.position.x, playerData.position.y, 'player');
+          var newEnemySprite = this.spawnKnight(playerData.position.x, playerData.position.y, false);
           this.otherPlayerSprites[playerSocketId] = newEnemySprite;
-          console.log("new");
+          console.log('new');
         }
         // update the velocity and position to the canonical values
         var playerSprite = this.otherPlayerSprites[playerSocketId];
@@ -117,10 +138,25 @@ var playState = {
 
   // Helper function to spawn a player. Get a random player spawn, with min distance from the goal.
   randomPlayerSpawn: function() {
-    var playerX = Math.floor(Math.random() * ( 16 + (game.width - 32 /* walls are 16px */)));
+    var playerX = Math.floor(Math.random() * ( 16 + (game.width - 32 /* walls are 16px */ )));
     var playerY = Math.floor(Math.random() * ( 16 + (game.height -32)));
 
-    return game.add.sprite(playerX, playerY, 'player');
+    this.player = this.spawnKnight(playerX, playerY, true);
+  },
+
+  // Helper function to spawn an animated knight, either player or enemy
+  spawnKnight: function(x, y, isHero) {
+    var sprite = game.add.sprite(x, y, 'knight', 0);
+    // Add animations
+    sprite.animations.add('down', [0, 1, 2], 10);
+    sprite.animations.add('up', [9, 10, 11], 10);
+    sprite.animations.add('right', [3, 4, 5], 10);
+    sprite.animations.add('left', [15, 16, 17], 10);
+    // Change color if it's an evil knight
+    if (!isHero) {
+      sprite.tint = 0x9BC1FF;
+    }
+    return sprite;
   },
 
   // Helper function to find objects in a Tiled layer that contain a "type" property.
