@@ -32,6 +32,10 @@ var playState = {
     // enable keyboard
     this.keyboard = game.input.keyboard;
 
+    // Keep track of the buttons being pressed, so we only update the server on the delta
+    this.game.keysCurrentlyDown = [];
+    this.initializeKeyboard();
+    
     // make sure our state is synced with the server's state.
     game.connection.on('playerState', function(playerState) {
       game.serverCanonicalState = playerState;
@@ -235,6 +239,24 @@ var playState = {
     //copy all properties to the sprite
     Object.keys(element.properties).forEach(function(key){
       sprite[key] = element.properties[key];
+    });
+  },
+  // Setup the keyboard for the game with the requisite events.
+  initializeKeyboard: function() {
+    var wKey = game.input.keyboard.addKey(Phaser.Keyboard.W);   
+    var aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);   
+    var sKey = game.input.keyboard.addKey(Phaser.Keyboard.S);   
+    var dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+    [wKey, aKey, sKey, dKey].forEach(function(key) {
+      key.onDown.add(function() {
+        this.game.keysCurrentlyDown.push(key.keyCode);
+        game.connection.emit('buttonsPressed', this.game.keysCurrentlyDown);
+      });
+      key.onUp.add(function() {
+        // splice: remove the keycode from the array
+        this.game.keysCurrentlyDown.splice(this.game.keysCurrentlyDown.indexOf(key.keyCode), 1);
+        game.connection.emit('buttonsPressed', this.game.keysCurrentlyDown);
+      });
     });
   }
 };

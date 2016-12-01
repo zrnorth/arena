@@ -72,11 +72,13 @@ function server(io) {
       
       // Update the player's known position, velo, facing
       playerState[socket.id] = playerData;
-      console.log('got this: ' + JSON.stringify(playerData));
+      log('got some player data: ' + JSON.stringify(playerData));
       // todo: do some sort of sanity check to make sure it's allowed (server has final call)
     });
 
+    // todo: putting this off til later. server should maintain state based on button presses
     socket.on('buttonsPressed', function(buttonsPressed) {
+      /*
       // Get the players id and apply the newly pressed buttons to that player's state.
       if (!(socket.id in clients)) {
         log('error - client has not connected properly', 'error');
@@ -85,6 +87,7 @@ function server(io) {
       }
       var newPlayerState = controls.handle(buttonsPressed, playerState[socket.id]);
       playerState[socket.id] = newPlayerState;
+      */
     });
 
     socket.on('disconnect', function(data, ack) {
