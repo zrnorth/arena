@@ -1,5 +1,8 @@
 // io is an initialized socket.io server with defaults from npm's http.
 // Set up all the connections here and maintain state of the game.
+
+var controls = require('../lib/controls.js');
+
 function server(io) {
   // consts
   var DEBUG = true;
@@ -71,6 +74,17 @@ function server(io) {
       playerState[socket.id] = playerData;
       console.log('got this: ' + JSON.stringify(playerData));
       // todo: do some sort of sanity check to make sure it's allowed (server has final call)
+    });
+
+    socket.on('buttonsPressed', function(buttonsPressed) {
+      // Get the players id and apply the newly pressed buttons to that player's state.
+      if (!(socket.id in clients)) {
+        log('error - client has not connected properly', 'error');
+        socket.emit('errorMsg', 'did not connect to room before sending button press');
+        return;
+      }
+      var newPlayerState = controls.handle(buttonsPressed, playerState[socket.id]);
+      playerState[socket.id] = newPlayerState;
     });
 
     socket.on('disconnect', function(data, ack) {
